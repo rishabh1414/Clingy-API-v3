@@ -1,0 +1,10 @@
+# Node.js
+node_modules/
+npm-debug.log
+.DS_Store # macOS specific
+.env # IMPORTANT: Do not commit sensitive environment variables!
+/build
+/dist
+/logs
+*.log
+.vscode/ # Optional: If you don't want to share editor specific settings
