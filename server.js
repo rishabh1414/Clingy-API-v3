@@ -16,7 +16,7 @@ const errorHandler = require("./middleware/errorMiddleware"); // Centralized err
 const authRoutes = require("./routes/authRoutes"); // Authentication routes
 const accountRoutes = require("./routes/accountRoutes"); // Account creation and SSE routes
 const tokenRefreshJob = require("./cronJobs/tokenRefreshJob"); // Scheduled token refresh job
-
+import ssoRoutes from "./routes/ssoRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -32,7 +32,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1) {
         console.log("CORS allowed for origin:", origin);
@@ -43,6 +42,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-sso-session"],
   })
 );
 
@@ -57,7 +58,7 @@ connectDB();
 // Register all route modules with their base paths
 app.use("/api/auth", authRoutes);
 app.use("/", accountRoutes); // SSE endpoint and agency-token are root-level
-
+app.use("/api/sso", ssoRoutes);
 // Simple root route
 app.get("/", (req, res) => {
   res.send("Clingy Backend API is running...");
