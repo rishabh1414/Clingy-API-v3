@@ -16,7 +16,8 @@ const errorHandler = require("./middleware/errorMiddleware"); // Centralized err
 const authRoutes = require("./routes/authRoutes"); // Authentication routes
 const accountRoutes = require("./routes/accountRoutes"); // Account creation and SSE routes
 const tokenRefreshJob = require("./cronJobs/tokenRefreshJob"); // Scheduled token refresh job
-import ssoRoutes from "./routes/ssoRoutes.js";
+// import ssoRoutes from "./routes/ssoRoutes.js";
+const ssoRoutes = require("./routes/ssoRoutes");
 const app = express();
 const PORT = process.env.PORT || 8080;
 
