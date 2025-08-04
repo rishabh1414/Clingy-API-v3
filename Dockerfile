@@ -23,7 +23,7 @@ COPY . .
 
 # Expose the port your app listens on. Cloud Run injects PORT env var.
 # Your server.js already handles process.env.PORT || 3000, so 3000 is a safe default.
-EXPOSE 3000
+EXPOSE 8080
 
 # Define the command to run your application
 # `npm start` should be defined in your package.json scripts: "start": "node server.js"

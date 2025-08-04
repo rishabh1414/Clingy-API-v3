@@ -18,7 +18,7 @@ const accountRoutes = require("./routes/accountRoutes"); // Account creation and
 const tokenRefreshJob = require("./cronJobs/tokenRefreshJob"); // Scheduled token refresh job
 import ssoRoutes from "./routes/ssoRoutes.js";
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // 2. CORS Configuration
 const allowedOrigins = [
