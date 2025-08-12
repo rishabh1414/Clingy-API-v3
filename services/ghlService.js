@@ -37,6 +37,7 @@ async function getAccessToken(code) {
     const response = await axios.post(`${GHL_API_DOMAIN}/oauth/token`, body, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
+    console.log(response.data);
     if (response.data?.access_token) return response.data;
     throw new Error("Failed to obtain access token from GHL.");
   } catch (error) {

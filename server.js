@@ -70,10 +70,10 @@ function validateSSOConfiguration() {
 }
 
 // ==========================================
-// 3. CORS CONFIGURATION
+// 3. CORS CONFIGURATION (auto-allow *.securebusinessautomation.com)
 // ==========================================
 
-const allowedOrigins = [
+const allowedExactOrigins = new Set([
   "https://app.gohighlevel.com",
   "https://app.highlevel.com",
   "https://sso-app.clingy.app",
@@ -81,23 +81,55 @@ const allowedOrigins = [
   "https://portal.clingy.app",
   "https://equityproperties.clingy.app",
   "https://offers.nepcashhomebuyers.com",
-];
+]);
 
 if (process.env.NODE_ENV === "development") {
-  allowedOrigins.push("http://localhost:3000", "http://127.0.0.1:3000");
+  allowedExactOrigins.add("http://localhost:3000");
+  allowedExactOrigins.add("http://127.0.0.1:3000");
+}
+
+// Allow apex + any subdomain of securebusinessautomation.com over HTTPS
+const SBA_PATTERN = /^https:\/\/([a-z0-9-]+\.)*securebusinessautomation\.com$/i;
+
+// (Optional) if you later want to allow *.secureautomation.com as well, uncomment:
+// const SA_PATTERN  = /^https:\/\/([a-z0-9-]+\.)*secureautomation\.com$/i;
+
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    // Non-browser clients (Postman/cURL) or same-origin fetch; decide policy:
+    // return false to force explicit origins only, or true to allow.
+    return true; // keep your previous behavior of allowing when no Origin
+  }
+  if (allowedExactOrigins.has(origin)) return true;
+
+  // Pattern match for *.securebusinessautomation.com (and apex)
+  try {
+    const u = new URL(origin);
+    if (u.protocol !== "https:") return false; // enforce HTTPS for public origins
+    if (
+      u.hostname === "securebusinessautomation.com" ||
+      SBA_PATTERN.test(origin)
+    )
+      return true;
+
+    // If enabling the second base domain, also check SA_PATTERN here.
+    // if (u.hostname === "secureautomation.com" || SA_PATTERN.test(origin)) return true;
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("CORS blocked origin:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
+  origin(origin, callback) {
+    const allowed = isAllowedOrigin(origin);
+    if (allowed) return callback(null, origin || true);
+    console.log("CORS blocked origin:", origin);
+    return callback(new Error("Not allowed by CORS"));
   },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true, // needed if you send cookies/Authorization from browsers
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Origin",
     "X-Requested-With",
@@ -106,12 +138,17 @@ const corsOptions = {
     "Authorization",
     "x-sso-session",
   ],
+  maxAge: 86400, // cache preflight (OPTIONS) for 24h
 };
 
-// --- UPDATED FIX ---
-// Apply CORS middleware before any routes. This single line handles all requests,
-// including preflight OPTIONS requests, and is the standard way to implement CORS.
+// Apply CORS early so it covers all routes (incl. preflights)
 app.use(cors(corsOptions));
+
+// Ensure caches/proxies respect per-origin variation
+app.use((req, res, next) => {
+  res.setHeader("Vary", "Origin");
+  next();
+});
 
 // 4. GLOBAL MIDDLEWARE
 app.use(logger("dev"));
