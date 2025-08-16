@@ -23,8 +23,8 @@ async function createFolder(newFolderName, parentFolderId, userEmail) {
       parents: [parentFolderId],
     };
     const folder = await drive.files.create({
-      resource: folderMetadata,
-      fields: "id", // Request only the ID field
+      requestBody: folderMetadata,
+      fields: "id", // Request only the ID field␊
     });
     const folderId = folder.data.id;
     console.log("Google Drive Folder created with ID:", folderId);
@@ -32,13 +32,13 @@ async function createFolder(newFolderName, parentFolderId, userEmail) {
     // Share the folder with the specified user.
     await drive.permissions.create({
       fileId: folderId,
-      resource: {
+      requestBody: {
         type: "user",
-        role: "writer", // Grant editor access
+        role: "writer", // Grant editor access␊
         emailAddress: userEmail,
       },
-      fields: "id", // Request only the permission ID field
-      sendNotificationEmails: false, // Optional: set to true if you want to notify the user
+      fields: "id", // Request only the permission ID field␊
+      sendNotificationEmails: false, // Optional: set to true if you want to notify the user␊
     });
     console.log("Google Drive Folder created and shared successfully.");
     return folderId;
