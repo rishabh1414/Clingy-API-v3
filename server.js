@@ -78,6 +78,8 @@ const allowedExactOrigins = new Set([
   "https://app.highlevel.com",
   "https://sso-app.clingy.app",
   "http://127.0.0.1:5500",
+  "http://127.0.0.1:5501",
+  "https://accounts.legacyprojector.com",
   "https://portal.clingy.app",
   "https://equityproperties.clingy.app",
   "https://offers.nepcashhomebuyers.com",
