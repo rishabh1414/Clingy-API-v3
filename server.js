@@ -28,7 +28,6 @@ const PORT = process.env.PORT || 8080;
 function validateSSOConfiguration() {
   console.log("=== SSO Configuration Validation ===");
 
-  // Updated to use the correct environment variable name from GHL documentation
   const ssoKey = process.env.GHL_APP_SHARED_SECRET;
   const companyId = process.env.GHL_COMPANY_ID;
 
@@ -49,7 +48,6 @@ function validateSSOConfiguration() {
     return false;
   }
 
-  // Test the SSO key with sample data
   try {
     const testData = { test: "validation", userId: "test123" };
     const encrypted = CryptoJS.AES.encrypt(
@@ -70,7 +68,7 @@ function validateSSOConfiguration() {
 }
 
 // ==========================================
-// 3. CORS CONFIGURATION (auto-allow *.securebusinessautomation.com)
+// 3. CORS CONFIGURATION (auto-allow *.securebusinessautomation.com + *.base44.app)
 // ==========================================
 
 const allowedExactOrigins = new Set([
@@ -84,6 +82,7 @@ const allowedExactOrigins = new Set([
   "https://equityproperties.clingy.app",
   "https://offers.nepcashhomebuyers.com",
   "https://legacyprojector.com",
+  // you can add more exact origins as needed
 ]);
 
 if (process.env.NODE_ENV === "development") {
@@ -91,32 +90,30 @@ if (process.env.NODE_ENV === "development") {
   allowedExactOrigins.add("http://127.0.0.1:3000");
 }
 
-// Allow apex + any subdomain of securebusinessautomation.com over HTTPS
+// Patterns
 const SBA_PATTERN = /^https:\/\/([a-z0-9-]+\.)*securebusinessautomation\.com$/i;
-
-// (Optional) if you later want to allow *.secureautomation.com as well, uncomment:
-// const SA_PATTERN  = /^https:\/\/([a-z0-9-]+\.)*secureautomation\.com$/i;
+const BASE44_PATTERN = /^https:\/\/([a-z0-9-]+\.)*base44\.app$/i;
 
 function isAllowedOrigin(origin) {
   if (!origin) {
-    // Non-browser clients (Postman/cURL) or same-origin fetch; decide policy:
-    // return false to force explicit origins only, or true to allow.
-    return true; // keep your previous behavior of allowing when no Origin
+    // Non-browser clients (Postman/cURL) or same-origin fetch
+    return true;
   }
   if (allowedExactOrigins.has(origin)) return true;
 
-  // Pattern match for *.securebusinessautomation.com (and apex)
   try {
     const u = new URL(origin);
-    if (u.protocol !== "https:") return false; // enforce HTTPS for public origins
+    if (u.protocol !== "https:") return false;
+
     if (
       u.hostname === "securebusinessautomation.com" ||
       SBA_PATTERN.test(origin)
-    )
+    ) {
       return true;
-
-    // If enabling the second base domain, also check SA_PATTERN here.
-    // if (u.hostname === "secureautomation.com" || SA_PATTERN.test(origin)) return true;
+    }
+    if (u.hostname === "base44.app" || BASE44_PATTERN.test(origin)) {
+      return true;
+    }
 
     return false;
   } catch {
@@ -127,11 +124,13 @@ function isAllowedOrigin(origin) {
 const corsOptions = {
   origin(origin, callback) {
     const allowed = isAllowedOrigin(origin);
-    if (allowed) return callback(null, origin || true);
+    if (allowed) {
+      return callback(null, origin || true);
+    }
     console.log("CORS blocked origin:", origin);
     return callback(new Error("Not allowed by CORS"));
   },
-  credentials: true, // needed if you send cookies/Authorization from browsers
+  credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Origin",
@@ -141,13 +140,10 @@ const corsOptions = {
     "Authorization",
     "x-sso-session",
   ],
-  maxAge: 86400, // cache preflight (OPTIONS) for 24h
+  maxAge: 86400,
 };
 
-// Apply CORS early so it covers all routes (incl. preflights)
 app.use(cors(corsOptions));
-
-// Ensure caches/proxies respect per-origin variation
 app.use((req, res, next) => {
   res.setHeader("Vary", "Origin");
   next();
@@ -169,14 +165,12 @@ app.get("/", (req, res) => {
   res.send("Clingy Backend API is running...");
 });
 
-// 7. GLOBAL ERROR HANDLING (must be last)
+// 7. GLOBAL ERROR HANDLING
 app.use(errorHandler);
 
 // 8. START SERVER AND JOBS
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  // Run validation on server start
   validateSSOConfiguration();
-  // Start scheduled jobs
   tokenRefreshJob.start();
 });
