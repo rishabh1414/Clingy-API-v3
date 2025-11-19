@@ -68,7 +68,8 @@ function validateSSOConfiguration() {
 }
 
 // ==========================================
-// 3. CORS CONFIGURATION (auto-allow *.securebusinessautomation.com + *.base44.app)
+// 3. CORS CONFIGURATION
+// auto-allow *.securebusinessautomation.com + *.base44.app + *.legacyprojector.com
 // ==========================================
 
 const allowedExactOrigins = new Set([
@@ -81,8 +82,7 @@ const allowedExactOrigins = new Set([
   "https://portal.clingy.app",
   "https://equityproperties.clingy.app",
   "https://offers.nepcashhomebuyers.com",
-  "https://legacyprojector.com",
-  // you can add more exact origins as needed
+  "https://legacyprojector.com", // root domain
 ]);
 
 if (process.env.NODE_ENV === "development") {
@@ -90,28 +90,42 @@ if (process.env.NODE_ENV === "development") {
   allowedExactOrigins.add("http://127.0.0.1:3000");
 }
 
-// Patterns
+// Wildcard patterns
 const SBA_PATTERN = /^https:\/\/([a-z0-9-]+\.)*securebusinessautomation\.com$/i;
 const BASE44_PATTERN = /^https:\/\/([a-z0-9-]+\.)*base44\.app$/i;
+const LEGACYPROJECTOR_PATTERN =
+  /^https:\/\/([a-z0-9-]+\.)*legacyprojector\.com$/i;
 
 function isAllowedOrigin(origin) {
   if (!origin) {
-    // Non-browser clients (Postman/cURL) or same-origin fetch
+    // Non-browser clients (Postman/cURL) or server-side fetch
     return true;
   }
   if (allowedExactOrigins.has(origin)) return true;
 
   try {
     const u = new URL(origin);
+
     if (u.protocol !== "https:") return false;
 
+    // securebusinessautomation.com + subdomains
     if (
       u.hostname === "securebusinessautomation.com" ||
       SBA_PATTERN.test(origin)
     ) {
       return true;
     }
+
+    // base44.app + subdomains
     if (u.hostname === "base44.app" || BASE44_PATTERN.test(origin)) {
+      return true;
+    }
+
+    // legacyprojector.com + ALL subdomains
+    if (
+      u.hostname === "legacyprojector.com" ||
+      LEGACYPROJECTOR_PATTERN.test(origin)
+    ) {
       return true;
     }
 
