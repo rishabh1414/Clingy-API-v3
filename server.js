@@ -9,6 +9,7 @@ const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
 const CryptoJS = require("crypto-js"); // Added for validation/debug functions
+const bcrypt = require("bcrypt");
 
 // Import internal modules
 const connectDB = require("./config/db");
@@ -174,6 +175,39 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/", accountRoutes);
 app.use("/api/sso", ssoRoutes);
+
+// Utility endpoints for bcrypt hashing/comparison
+app.post("/api/utils/hash", async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "password is required" });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    return res.json({ hash });
+  } catch (error) {
+    console.error("Error generating bcrypt hash:", error);
+    return res.status(500).json({ error: "could not generate hash" });
+  }
+});
+
+app.post("/api/utils/compare", async (req, res) => {
+  try {
+    const { password, hash } = req.body;
+    if (!password || !hash) {
+      return res
+        .status(400)
+        .json({ error: "password and hash are both required" });
+    }
+
+    const match = await bcrypt.compare(password, hash);
+    return res.json({ match });
+  } catch (error) {
+    console.error("Error comparing bcrypt hash:", error);
+    return res.status(500).json({ error: "could not compare hash" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Clingy Backend API is running...");
