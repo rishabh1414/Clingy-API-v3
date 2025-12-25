@@ -83,7 +83,8 @@ const allowedExactOrigins = new Set([
   "https://portal.clingy.app",
   "https://equityproperties.clingy.app",
   "https://offers.nepcashhomebuyers.com",
-  "https://legacyprojector.com", // root domain
+  "https://legacyprojector.com",
+  "https://portal.secureautomation.app", // root domain
 ]);
 
 if (process.env.NODE_ENV === "development") {
