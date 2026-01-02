@@ -85,6 +85,7 @@ const allowedExactOrigins = new Set([
   "https://offers.nepcashhomebuyers.com",
   "https://legacyprojector.com",
   "https://portal.secureautomation.app", // root domain
+  "chrome-extension://onkhiiighfnfjldnleifganbkmfkonjbc",
 ]);
 
 if (process.env.NODE_ENV === "development") {
