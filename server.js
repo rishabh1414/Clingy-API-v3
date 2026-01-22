@@ -38,7 +38,7 @@ function validateSSOConfiguration() {
   if (!ssoKey) {
     console.error("❌ CRITICAL: GHL_APP_SHARED_SECRET is missing!");
     console.log(
-      "Please add your Shared Secret from GHL App Settings to .env file:"
+      "Please add your Shared Secret from GHL App Settings to .env file:",
     );
     console.log("GHL_APP_SHARED_SECRET=your_shared_secret_here");
     return false;
@@ -53,10 +53,10 @@ function validateSSOConfiguration() {
     const testData = { test: "validation", userId: "test123" };
     const encrypted = CryptoJS.AES.encrypt(
       JSON.stringify(testData),
-      ssoKey
+      ssoKey,
     ).toString();
     const decrypted = CryptoJS.AES.decrypt(encrypted, ssoKey).toString(
-      CryptoJS.enc.Utf8
+      CryptoJS.enc.Utf8,
     );
     JSON.parse(decrypted);
 
@@ -85,7 +85,7 @@ const allowedExactOrigins = new Set([
   "https://offers.nepcashhomebuyers.com",
   "https://legacyprojector.com",
   "https://portal.secureautomation.app", // root domain
-  "chrome-extension://onkhiiighfnfjldnleifganbkmfkonjbc",
+  "chrome-extension://onkhiighfnfjldnleifganbkmfkonjbc",
 ]);
 
 if (process.env.NODE_ENV === "development") {
