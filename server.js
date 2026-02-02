@@ -86,6 +86,8 @@ const allowedExactOrigins = new Set([
   "https://legacyprojector.com",
   "https://portal.secureautomation.app", // root domain
   "chrome-extension://onkhiighfnfjldnleifganbkmfkonjbc",
+  // 👇 ADD YOUR EXTENSION ID HERE 👇
+  "chrome-extension://chkcckanmihmkoaamndailaicdmakjdk",
 ]);
 
 if (process.env.NODE_ENV === "development") {
